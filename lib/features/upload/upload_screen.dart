@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:taskati/core/colors.dart';
 import 'package:taskati/core/functions/navigations.dart';
 import 'package:taskati/core/functions/textStyle.dart';
@@ -11,7 +12,11 @@ import 'package:taskati/widgets/custom_button.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key});
+  String? path, name;
+
+  UploadScreen({
+    super.key,
+  });
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
@@ -23,14 +28,21 @@ class _UploadScreenState extends State<UploadScreen> {
   var formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    var userBox = Hive.box("user");
+    nameController.text = userBox.get("name");
+    path = userBox.get("image");
     return Scaffold(
       appBar: AppBar(
         actions: [
           TextButton(
-              onPressed: () {
-                if (formKey.currentState!.validate() && path != null)
+              onPressed: () async {
+                if (formKey.currentState!.validate() && path != null) {
+                  var userBox = Hive.box('user');
+                  userBox.put('name', nameController.text);
+                  userBox.put('image', path);
+                  userBox.put('isUploaded', true);
                   pushWithReplacement(context, HomeScreen());
-                else if (path == null) {
+                } else if (path == null) {
                   showDialog(
                       context: context,
                       builder: (context) {
